@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .login-icon {
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            border: none;
+        }
+
+        .form-group {
+            margin-top: 24px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            background: rgba(1, 4, 9, 0.8);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 24px;
+            font-size: 16px;
+            padding: 14px;
+        }
+
+        .error-msg {
+            color: #f85149;
+            margin-top: 16px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+        </div>
+        <h2>Admin Access</h2>
+        <p class="subtitle">Enter password to continue</p>
+
+        <form id="login-form">
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <div id="error-msg" class="error-msg">Invalid password</div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (res.ok) {
+                    window.location.href = '/admin';
+                } else {
+                    errorMsg.style.display = 'block';
+                    document.getElementById('password').value = '';
+                }
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = 'Connection error';
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

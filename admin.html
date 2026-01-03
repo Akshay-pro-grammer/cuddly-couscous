@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerrit Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Admin Specific Overrides */
+        .admin-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 24px;
+            padding: 20px 0;
+            width: 100%;
+        }
+
+        .branch-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .branch-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .branch-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .branch-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .branch-badge {
+            background: rgba(47, 129, 247, 0.15);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(47, 129, 247, 0.3);
+        }
+
+        .app-list {
+            margin-bottom: 20px;
+            font-size: 13px;
+            flex: 1;
+            /* Pushes footer down */
+        }
+
+        .app-list-header {
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .app-item {
+            background: rgba(13, 17, 23, 0.6);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .app-item:hover {
+            border-color: var(--border-color);
+        }
+
+        .app-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .hash-id {
+            color: #d2a8ff;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            background: rgba(210, 168, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .preview-box {
+            background: #050a10;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #a5d6ff;
+            white-space: pre-wrap;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .btn-shutdown {
+            background: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+            border: 1px solid rgba(218, 54, 51, 0.4);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-shutdown:hover {
+            background: rgba(218, 54, 51, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-delete:hover {
+            background: rgba(218, 54, 51, 0.1);
+            color: #f85149;
+            border-color: #f85149;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container" style="height: 100vh; max-width: 1400px; padding: 20px;">
+        <header>
+            <div class="admin-header-row">
+                <div class="logo-area" style="margin-bottom: 0;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="feather feather-shield">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <h1>Admin Dashboard</h1>
+                </div>
+                <button onclick="shutdownServer()" class="btn-shutdown">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                        <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                    Stop Server
+                </button>
+            </div>
+            <p class="subtitle" style="text-align: left; margin-top: 8px;">Monitor active release notes & submissions.
+            </p>
+        </header>
+
+        <main style="display: block; overflow-y: auto; padding-right: 5px;">
+            <div id="dashboard-grid" class="admin-grid">
+                <!-- Cards will be injected here -->
+                <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding-top: 50px;">
+                    Loading dashboard data...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function shutdownServer() {
+            if (!confirm('Are you sure you want to completely stop the release notes server?')) return;
+            try {
+                await fetch('/api/shutdown', { method: 'POST' });
+                document.body.innerHTML = `
+                    <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;color:#e6edf3;font-family:sans-serif;">
+                        <h2 style="margin-bottom:10px;">Server Stopped</h2>
+                        <p style="color:#8b949e;">The process has been terminated. You can close this tab.</p>
+                    </div>`;
+            } catch (err) {
+                alert('Failed to shutdown. Server might be unreachable.');
+            }
+        }
+
+        async function deleteBranch(branchName) {
+            if (!confirm(`Are you sure you want to DELETE all data for branch "${branchName}"? This cannot be undone.`)) return;
+
+            try {
+                const res = await fetch(`/api/admin/branch/${encodeURIComponent(branchName)}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadData(); // Refresh
+                } else {
+                    alert('Failed to delete branch.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error connecting to server.');
+            }
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch('/api/admin/data');
+                const data = await res.json();
+                const container = document.getElementById('dashboard-grid');
+
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; margin-top: 50px; opacity: 0.5;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom:10px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <p>No active submissions found.</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = data.map(branch => `
+                    <div class="branch-card">
+                        <div class="card-header">
+                            <div class="branch-info">
+                                <span class="branch-name">${branch.branch}</span>
+                                <span class="branch-badge">${branch.apps.length} Apps</span>
+                            </div>
+                        </div>
+                        
+                        <div class="app-list">
+                            <div class="app-list-header">Submissions</div>
+                            ${branch.apps.map(app => `
+                                <div class="app-item">
+                                    <span class="app-name">${app.name}</span>
+                                    <span class="hash-id" title="Tag Hash ID">${app.tagHashId || '—'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="preview-box">${branch.note}</div>
+                        
+                        <div class="card-actions">
+                            <button class="btn btn-primary" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(branch.note)}'))">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                Copy Note
+                            </button>
+                            <button class="btn btn-secondary btn-delete" onclick="deleteBranch('${branch.branch}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Poll interval
+        loadData();
+        setInterval(loadData, 5000);
+    </script>
+</body>
+
+</html>
