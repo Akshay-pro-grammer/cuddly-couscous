@@ -258,9 +258,9 @@
             font-size: 11px;
             line-height: 1.6;
             color: #a5d6ff;
-            white-space: pre-wrap;
+            white-space: pre;
             max-height: 180px;
-            overflow-y: auto;
+            overflow: auto;
             border: 1px solid var(--border-color);
             margin: 20px 24px;
         }
@@ -466,14 +466,44 @@
 
         function copyNote(branchName) {
             const note = notesCache[branchName];
-            if (note) {
+            if (!note) return;
+
+            // Try modern clipboard API first, fallback to textarea method
+            if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(note).then(() => {
                     alert('Note copied to clipboard!');
-                }).catch(err => {
-                    console.error('Copy failed:', err);
-                    alert('Failed to copy. Please copy manually from the preview box.');
+                }).catch(() => {
+                    fallbackCopy(note);
                 });
+            } else {
+                fallbackCopy(note);
             }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('Note copied to clipboard!');
+            } catch (err) {
+                alert('Copy failed. Please select and copy manually.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Helper to ensure links have protocol
+        function formatLink(url) {
+            if (!url) return '';
+            url = url.trim();
+            if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                return 'https://' + url;
+            }
+            return url;
         }
 
         async function loadData() {
@@ -519,7 +549,10 @@
                         <div class="card-body">
                             <div class="app-list">
                                 <div class="app-list-header">Submissions</div>
-                                ${branch.apps.map(app => `
+                                ${branch.apps.map(app => {
+                    const aiLink = formatLink(app.aiCodeReviewLink);
+                    const batLink = formatLink(app.featureBatLink);
+                    return `
                                     <div class="app-item" style="flex-direction: column; align-items: stretch;">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
                                             <div class="app-item-info">
@@ -531,11 +564,11 @@
                                             </button>
                                         </div>
                                         <div class="app-links">
-                                            ${app.aiCodeReviewLink ? `<a href="${app.aiCodeReviewLink}" target="_blank">🤖 AI Review</a>` : '<span class="no-link">🤖 —</span>'}
-                                            ${app.featureBatLink ? `<a href="${app.featureBatLink}" target="_blank">🧪 FeatureBAT</a>` : '<span class="no-link">🧪 —</span>'}
+                                            ${aiLink ? `<a href="${aiLink}" target="_blank" rel="noopener">🤖 AI Review</a>` : '<span class="no-link">🤖 —</span>'}
+                                            ${batLink ? `<a href="${batLink}" target="_blank" rel="noopener">🧪 FeatureBAT</a>` : '<span class="no-link">🧪 —</span>'}
                                         </div>
                                     </div>
-                                `).join('')}
+                                `}).join('')}
                             </div>
                         </div>
 

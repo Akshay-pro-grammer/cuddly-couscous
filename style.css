@@ -217,12 +217,13 @@ textarea:focus {
     background: #050a10;
     border-radius: 8px;
     padding: 16px;
-    overflow-y: auto;
+    overflow: auto;
     border: 1px solid var(--border-color);
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 13px;
     line-height: 1.6;
     color: #a5d6ff;
+    white-space: pre;
 }
 
 .empty-state {

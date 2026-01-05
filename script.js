@@ -68,25 +68,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Helper function to wrap lines at 72 characters
+        // Helper function to break lines at 72 characters
         function wrapLine(text, maxLen = 72) {
             if (!text) return text;
             const lines = text.split('\n');
             return lines.map(line => {
                 if (line.length <= maxLen) return line;
-                const words = line.split(' ');
-                let wrapped = [];
-                let currentLine = '';
-                for (const word of words) {
-                    if ((currentLine + ' ' + word).trim().length <= maxLen) {
-                        currentLine = (currentLine + ' ' + word).trim();
-                    } else {
-                        if (currentLine) wrapped.push(currentLine);
-                        currentLine = word;
-                    }
+                // Hard break at maxLen characters
+                let result = [];
+                while (line.length > maxLen) {
+                    result.push(line.substring(0, maxLen));
+                    line = line.substring(maxLen);
                 }
-                if (currentLine) wrapped.push(currentLine);
-                return wrapped.join('\n');
+                if (line) result.push(line);
+                return result.join('\n');
             }).join('\n');
         }
 
