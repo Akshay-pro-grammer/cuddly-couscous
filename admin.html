@@ -403,21 +403,6 @@
             </div>
         </header>
 
-        <div id="stats-bar" class="stats-bar">
-            <div class="stat-card">
-                <div class="stat-value" id="stat-branches">0</div>
-                <div class="stat-label">Active Branches</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-apps">0</div>
-                <div class="stat-label">Total Submissions</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="stat-issues">0</div>
-                <div class="stat-label">Issues Tracked</div>
-            </div>
-        </div>
-
         <main style="display: block; overflow-y: auto; flex: 1;">
             <div id="dashboard-grid" class="admin-grid">
                 <!-- Cards will be injected here -->
@@ -476,18 +461,31 @@
             }
         }
 
+        // Store notes for copy function
+        let notesCache = {};
+
+        function copyNote(branchName) {
+            const note = notesCache[branchName];
+            if (note) {
+                navigator.clipboard.writeText(note).then(() => {
+                    alert('Note copied to clipboard!');
+                }).catch(err => {
+                    console.error('Copy failed:', err);
+                    alert('Failed to copy. Please copy manually from the preview box.');
+                });
+            }
+        }
+
         async function loadData() {
             try {
                 const res = await fetch('/api/admin/data');
                 const data = await res.json();
                 const container = document.getElementById('dashboard-grid');
 
-                // Update stats
-                const totalApps = data.reduce((sum, b) => sum + b.apps.length, 0);
-                const totalIssues = data.reduce((sum, b) => sum + (b.issues?.length || 0), 0);
-                document.getElementById('stat-branches').textContent = data.length;
-                document.getElementById('stat-apps').textContent = totalApps;
-                document.getElementById('stat-issues').textContent = totalIssues;
+                // Cache notes for copy function
+                data.forEach(branch => {
+                    notesCache[branch.branch] = branch.note;
+                });
 
                 if (data.length === 0) {
                     container.innerHTML = `
@@ -544,7 +542,7 @@
                         <div class="preview-box">${branch.note}</div>
                         
                         <div class="card-actions">
-                            <button class="btn btn-primary" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(branch.note)}'))">
+                            <button class="btn btn-primary" onclick="copyNote('${branch.branch}')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                                 Copy Note
                             </button>

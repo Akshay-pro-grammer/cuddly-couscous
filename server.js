@@ -61,16 +61,39 @@ function generateReleaseNote(branchName) {
     const data = branchStore[branchName];
     if (!data || data.apps.length === 0) return '';
 
+    // Helper function to wrap lines at 72 characters
+    function wrapLine(text, maxLen = 72) {
+        if (!text) return text;
+        const lines = text.split('\n');
+        return lines.map(line => {
+            if (line.length <= maxLen) return line;
+            // Wrap long lines
+            const words = line.split(' ');
+            let wrapped = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + ' ' + word).trim().length <= maxLen) {
+                    currentLine = (currentLine + ' ' + word).trim();
+                } else {
+                    if (currentLine) wrapped.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            if (currentLine) wrapped.push(currentLine);
+            return wrapped.join('\n');
+        }).join('\n');
+    }
+
     const header = ':Release Notes:\nhorizontal deployment for multiple applications';
     const testPerformed = ':test performed:\nnpm test -pass';
     const detailedNotesHeader = ':Detailed notes:';
 
-    // Detailed Notes Section
+    // Detailed Notes Section (wrap gitlog content)
     const detailedContent = data.apps.map(app => {
         return [
             `com.webos.app.${app.name}`,
             app.submissionId,
-            app.gitlog
+            wrapLine(app.gitlog)
         ].join('\n');
     }).join('\n\n');
 

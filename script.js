@@ -17,22 +17,138 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('generator-form');
     const btnSubmit = document.getElementById('btn-submit');
 
-    // API Interaction
+    // Store existing branch data for merging preview
+    let existingBranchData = null;
+
+    // Generate local preview (mirrors server logic)
+    function generateLocalPreview() {
+        const appName = inputs.appName.value.trim();
+        const branch = inputs.branch.value.trim().toLowerCase();
+        const submissionId = inputs.submissionId.value.trim();
+        const gitlog = inputs.gitlog.value.trim();
+        const issues = inputs.issues.value.trim();
+
+        if (!branch && !appName) {
+            preview.textContent = 'Start typing to see real-time preview...';
+            preview.classList.add('empty-state');
+            return;
+        }
+
+        preview.classList.remove('empty-state');
+        preview.style.color = '#a5d6ff';
+
+        // Build apps list (merge with existing data if available)
+        let apps = [];
+        let allIssues = [];
+
+        if (existingBranchData && existingBranchData.apps) {
+            // Copy existing apps, but replace if same appName
+            apps = existingBranchData.apps.filter(a => a.name !== appName);
+            allIssues = [...(existingBranchData.issues || [])];
+        }
+
+        // Add current form data
+        if (appName) {
+            apps.push({
+                name: appName,
+                submissionId: submissionId || 'submissions/...',
+                gitlog: gitlog || '...'
+            });
+        }
+
+        // Add new issues
+        if (issues) {
+            const newIssues = issues.split(',').map(i => i.trim()).filter(i => i);
+            allIssues = [...new Set([...allIssues, ...newIssues])];
+        }
+
+        if (apps.length === 0) {
+            preview.textContent = 'Add an application name to generate preview...';
+            preview.classList.add('empty-state');
+            return;
+        }
+
+        // Helper function to wrap lines at 72 characters
+        function wrapLine(text, maxLen = 72) {
+            if (!text) return text;
+            const lines = text.split('\n');
+            return lines.map(line => {
+                if (line.length <= maxLen) return line;
+                const words = line.split(' ');
+                let wrapped = [];
+                let currentLine = '';
+                for (const word of words) {
+                    if ((currentLine + ' ' + word).trim().length <= maxLen) {
+                        currentLine = (currentLine + ' ' + word).trim();
+                    } else {
+                        if (currentLine) wrapped.push(currentLine);
+                        currentLine = word;
+                    }
+                }
+                if (currentLine) wrapped.push(currentLine);
+                return wrapped.join('\n');
+            }).join('\n');
+        }
+
+        // Generate the note
+        const header = ':Release Notes:\nhorizontal deployment for multiple applications';
+        const testPerformed = ':test performed:\nnpm test -pass';
+        const detailedNotesHeader = ':Detailed notes:';
+
+        const detailedContent = apps.map(app => {
+            return [
+                `com.webos.app.${app.name}`,
+                app.submissionId,
+                wrapLine(app.gitlog)
+            ].join('\n');
+        }).join('\n\n');
+
+        // Build app names for footer
+        const appNamesBracket = apps.length > 1
+            ? `{${apps.map(a => a.name).join(',')}}`
+            : apps[0].name;
+
+        const footerLine = `[placeholder] [${branch || 'branch'}] CCC: com.webos.app.${appNamesBracket}`;
+
+        let issuesContent = '';
+        if (allIssues.length > 0) {
+            const issuesList = allIssues.map(issue => `[${issue}]`).join('\n');
+            issuesContent = issuesList + '\n' + footerLine;
+        } else {
+            issuesContent = footerLine;
+        }
+
+        const note = [
+            header,
+            '',
+            detailedNotesHeader,
+            detailedContent,
+            '',
+            testPerformed,
+            '',
+            ':issues:',
+            issuesContent
+        ].join('\n');
+
+        preview.textContent = note;
+    }
+
+    // Fetch existing branch data for merge preview
     async function fetchBranchNotes(branchName) {
-        if (!branchName) return;
+        if (!branchName) {
+            existingBranchData = null;
+            generateLocalPreview();
+            return;
+        }
         try {
             const response = await fetch(`/api/notes/${branchName}`);
             const data = await response.json();
-            if (data.note) {
-                preview.textContent = data.note;
-                preview.classList.remove('empty-state');
-                preview.style.color = '#a5d6ff';
-            } else {
-                preview.textContent = 'No data for this branch yet. Be the first!';
-                preview.classList.add('empty-state');
-            }
+            existingBranchData = data.data;
+            generateLocalPreview();
         } catch (err) {
             console.error('Error fetching notes:', err);
+            existingBranchData = null;
+            generateLocalPreview();
         }
     }
 
@@ -69,12 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 preview.classList.remove('empty-state');
                 preview.style.color = '#a5d6ff';
 
+                // Update existing data cache
+                await fetchBranchNotes(payload.branch);
+
                 // Visual feedback
-                const originalText = btnSubmit.textContent;
                 btnSubmit.textContent = 'Merged Successfully!';
                 btnSubmit.classList.add('btn-success');
                 setTimeout(() => {
-                    btnSubmit.textContent = originalText;
+                    btnSubmit.textContent = 'Submit & Merge';
                     btnSubmit.disabled = false;
                     btnSubmit.classList.remove('btn-success');
                 }, 2000);
@@ -89,12 +207,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners
 
-    // Auto-fetch when branch is typed
-    let debounceTimer;
+    // Real-time preview on any input change
+    let previewDebounce;
+    Object.values(inputs).forEach(input => {
+        if (input) {
+            input.addEventListener('input', () => {
+                clearTimeout(previewDebounce);
+                previewDebounce = setTimeout(generateLocalPreview, 100);
+            });
+        }
+    });
+
+    // Fetch branch data when branch field changes (with debounce)
+    let branchDebounce;
     inputs.branch.addEventListener('input', (e) => {
         const branch = e.target.value.trim();
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => fetchBranchNotes(branch), 500);
+        clearTimeout(branchDebounce);
+        branchDebounce = setTimeout(() => fetchBranchNotes(branch), 500);
     });
 
     form.addEventListener('submit', (e) => {
@@ -102,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitData();
     });
 
-    // Copy to Clipboard (Client side copys what's in preview)
+    // Copy to Clipboard
     btnCopy.addEventListener('click', async () => {
         const txt = preview.textContent;
         if (!txt || preview.classList.contains('empty-state')) return;
@@ -137,4 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     });
+
+    // Initial preview state
+    generateLocalPreview();
 });
