@@ -221,6 +221,33 @@ app.delete('/api/admin/branch/:branch', checkAuth, (req, res) => {
     }
 });
 
+// API: Delete specific app submission from a branch
+app.delete('/api/admin/branch/:branch/app/:appName', checkAuth, (req, res) => {
+    const branch = req.params.branch.toLowerCase();
+    const appName = req.params.appName;
+
+    if (!branchStore[branch]) {
+        return res.status(404).json({ error: 'Branch not found' });
+    }
+
+    const branchData = branchStore[branch];
+    const appIndex = branchData.apps.findIndex(a => a.name === appName);
+
+    if (appIndex === -1) {
+        return res.status(404).json({ error: 'App not found in branch' });
+    }
+
+    branchData.apps.splice(appIndex, 1);
+
+    // If no apps left, clean up the branch
+    if (branchData.apps.length === 0) {
+        delete branchStore[branch];
+    }
+
+    saveData();
+    res.json({ success: true });
+});
+
 // Serve Admin Dashboard
 app.get('/admin', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));

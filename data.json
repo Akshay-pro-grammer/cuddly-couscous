@@ -2,14 +2,14 @@
   "webos4media": {
     "apps": [
       {
-        "name": "Hekejen",
-        "submissionId": "Jsjshsn",
-        "gitlog": "Djdjjddhb",
-        "tagHashId": "Nshdhsns"
+        "name": "notification",
+        "submissionId": "submissions/123..submissions/124",
+        "gitlog": "123456 [fix] developed",
+        "tagHashId": "jdasjdkhu02uh2n1jnunnjn"
       }
     ],
     "issues": [
-      "Jdjdndnd"
+      "TVPLAT-123456"
     ]
   }
 }
