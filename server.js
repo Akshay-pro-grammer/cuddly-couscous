@@ -133,14 +133,15 @@ app.post('/api/login', (req, res) => {
 
 // API: Get formatted notes for a branch (Public)
 app.get('/api/notes/:branch', (req, res) => {
-    const branch = req.params.branch;
+    const branch = req.params.branch.toLowerCase();
     const note = generateReleaseNote(branch);
     res.json({ note, data: branchStore[branch] || null });
 });
 
 // API: Submit a new entry (Public)
 app.post('/api/submit', (req, res) => {
-    const { appName, submissionId, gitlog, issues, branch, tagHashId } = req.body;
+    const { appName, submissionId, gitlog, issues, branch: rawBranch, tagHashId } = req.body;
+    const branch = rawBranch ? rawBranch.toLowerCase() : '';
 
     if (!branch || !appName) {
         return res.status(400).json({ error: 'Branch and App Name are required' });
@@ -210,7 +211,7 @@ app.post('/api/shutdown', checkAuth, (req, res) => {
 
 // API: Delete Branch Data
 app.delete('/api/admin/branch/:branch', checkAuth, (req, res) => {
-    const branch = req.params.branch;
+    const branch = req.params.branch.toLowerCase();
     if (branchStore[branch]) {
         delete branchStore[branch];
         saveData(); // Persist changes
@@ -230,6 +231,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`Access from other devices using your machine's IP address on port ${PORT}`);
 });
