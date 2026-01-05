@@ -4,499 +4,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerrit Admin Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Admin Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Admin Specific Overrides - Enhanced UI */
-        body {
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
-            background-attachment: fixed;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        .admin-header-row {
+        body {
+            background: #0d1117;
+            color: #e6edf3;
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
-            padding: 16px 24px;
-            background: linear-gradient(135deg, rgba(47, 129, 247, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border-radius: 16px;
-            border: 1px solid rgba(47, 129, 247, 0.2);
-            margin-bottom: 24px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #30363d;
         }
 
-        .admin-header-row .logo-area h1 {
-            background: linear-gradient(135deg, #58a6ff 0%, #a78bfa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        h1 {
+            font-size: 24px;
+            color: #58a6ff;
         }
 
-        .stats-bar {
+        .btn-shutdown {
+            background: #da3633;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-shutdown:hover {
+            background: #f85149;
+        }
+
+        .branches {
             display: flex;
+            flex-direction: column;
             gap: 24px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, rgba(47, 129, 247, 0.15) 0%, rgba(47, 129, 247, 0.05) 100%);
-            border: 1px solid rgba(47, 129, 247, 0.3);
-            border-radius: 12px;
-            padding: 16px 24px;
-            flex: 1;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        .admin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-            gap: 24px;
-            padding: 0;
-            width: 100%;
         }
 
         .branch-card {
-            background: linear-gradient(145deg, rgba(22, 27, 34, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 0;
-            backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .branch-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(47, 129, 247, 0.15);
-            border-color: var(--accent);
-        }
-
-        .card-header {
+        .branch-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 24px;
-            background: linear-gradient(135deg, rgba(47, 129, 247, 0.08) 0%, transparent 100%);
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 0;
-        }
-
-        .branch-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .branch-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--accent), #a78bfa);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
+            padding: 16px 20px;
+            background: #21262d;
+            border-bottom: 1px solid #30363d;
         }
 
         .branch-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.3px;
-        }
-
-        .branch-badge {
-            background: linear-gradient(135deg, rgba(47, 129, 247, 0.2), rgba(139, 92, 246, 0.2));
-            color: #a78bfa;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
+            font-size: 18px;
             font-weight: 600;
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #58a6ff;
         }
 
-        .card-body {
-            padding: 20px 24px;
-            flex: 1;
+        .app-count {
+            background: #238636;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
         }
 
-        .app-list {
-            margin-bottom: 0;
-            font-size: 13px;
-        }
-
-        .app-list-header {
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .app-list-header::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-color);
+        .apps-list {
+            padding: 16px 20px;
         }
 
         .app-item {
-            background: rgba(13, 17, 23, 0.8);
-            padding: 14px 16px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(48, 54, 61, 0.5);
-            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #0d1117;
+            border-radius: 6px;
+            margin-bottom: 8px;
         }
 
-        .app-item:hover {
-            border-color: var(--accent);
-            background: rgba(47, 129, 247, 0.05);
-            transform: translateX(4px);
+        .app-item:last-child {
+            margin-bottom: 0;
         }
 
         .app-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-
-        .hash-id {
-            color: #7ee787;
-            font-family: 'JetBrains Mono', 'Consolas', monospace;
-            font-size: 11px;
-            background: rgba(126, 231, 135, 0.1);
-            padding: 3px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(126, 231, 135, 0.2);
-        }
-
-        .app-item-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn-delete-app {
-            background: rgba(248, 81, 73, 0.1);
-            border: 1px solid transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-delete-app:hover {
-            background: rgba(248, 81, 73, 0.2);
-            border-color: #f85149;
-            color: #f85149;
+            font-weight: 500;
         }
 
         .app-links {
             display: flex;
-            gap: 16px;
-            margin-top: 10px;
-            font-size: 12px;
+            gap: 12px;
+            margin-top: 8px;
         }
 
         .app-links a {
-            color: var(--accent);
+            color: #58a6ff;
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            background: rgba(47, 129, 247, 0.1);
-            transition: all 0.2s;
+            font-size: 12px;
         }
 
         .app-links a:hover {
-            background: rgba(47, 129, 247, 0.2);
-            transform: translateY(-1px);
+            text-decoration: underline;
         }
 
-        .app-links .no-link {
-            color: var(--text-secondary);
-            opacity: 0.4;
-            font-size: 11px;
+        .btn-delete {
+            background: transparent;
+            border: 1px solid #30363d;
+            color: #8b949e;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #da3633;
+            border-color: #da3633;
+            color: white;
         }
 
         .preview-box {
-            background: linear-gradient(180deg, #010409 0%, #0d1117 100%);
+            background: #010409;
             padding: 16px;
-            border-radius: 12px;
-            font-family: 'JetBrains Mono', 'Consolas', monospace;
-            font-size: 11px;
-            line-height: 1.6;
+            margin: 0 20px 16px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
             color: #a5d6ff;
             white-space: pre;
-            max-height: 180px;
             overflow: auto;
-            border: 1px solid var(--border-color);
-            margin: 20px 24px;
-        }
-
-        .preview-box::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .preview-box::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .preview-box::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
+            max-height: 200px;
+            border: 1px solid #30363d;
         }
 
         .card-actions {
             display: flex;
             gap: 12px;
-            padding: 16px 24px;
-            background: rgba(13, 17, 23, 0.5);
-            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-top: 1px solid #30363d;
         }
 
-        .card-actions .btn {
-            flex: 1;
-            justify-content: center;
-        }
-
-        .btn-shutdown {
-            background: linear-gradient(135deg, rgba(248, 81, 73, 0.2), rgba(248, 81, 73, 0.1));
-            color: #f85149;
-            border: 1px solid rgba(248, 81, 73, 0.4);
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-shutdown:hover {
-            background: linear-gradient(135deg, rgba(248, 81, 73, 0.3), rgba(248, 81, 73, 0.2));
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(248, 81, 73, 0.2);
-        }
-
-        .btn-delete {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        .btn-delete:hover {
-            background: rgba(248, 81, 73, 0.1);
-            color: #f85149;
-            border-color: #f85149;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #7c3aed);
+        .btn-copy {
+            background: #238636;
+            color: white;
             border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(47, 129, 247, 0.3);
+        .btn-copy:hover {
+            background: #2ea043;
         }
 
-        /* Empty state */
-        .empty-state-admin {
+        .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state-admin svg {
-            opacity: 0.3;
-            margin-bottom: 16px;
-        }
-
-        /* Loading animation */
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 0.5;
-            }
-
-            50% {
-                opacity: 1;
-            }
-        }
-
-        .loading {
-            animation: pulse 1.5s infinite;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .admin-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-bar {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .admin-header-row {
-                flex-direction: column;
-                gap: 16px;
-            }
+            padding: 60px;
+            color: #8b949e;
         }
     </style>
 </head>
 
 <body>
-    <div class="app-container" style="height: 100vh; max-width: 1400px; padding: 20px;">
-        <header>
-            <div class="admin-header-row">
-                <div class="logo-area" style="margin-bottom: 0;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="feather feather-shield">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <h1>Admin Dashboard</h1>
-                </div>
-                <button onclick="shutdownServer()" class="btn-shutdown">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                        <line x1="12" y1="2" x2="12" y2="12"></line>
-                    </svg>
-                    Stop Server
-                </button>
-            </div>
-        </header>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <button onclick="shutdownServer()" class="btn-shutdown">Stop Server</button>
+    </div>
 
-        <main style="display: block; overflow-y: auto; flex: 1;">
-            <div id="dashboard-grid" class="admin-grid">
-                <!-- Cards will be injected here -->
-                <div class="loading"
-                    style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding-top: 50px;">
-                    Loading dashboard data...
-                </div>
-            </div>
-        </main>
+    <div id="branches" class="branches">
+        <div class="empty-state">Loading...</div>
     </div>
 
     <script>
-        async function shutdownServer() {
-            if (!confirm('Are you sure you want to completely stop the release notes server?')) return;
-            try {
-                await fetch('/api/shutdown', { method: 'POST' });
-                document.body.innerHTML = `
-                    <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;color:#e6edf3;font-family:sans-serif;">
-                        <h2 style="margin-bottom:10px;">Server Stopped</h2>
-                        <p style="color:#8b949e;">The process has been terminated. You can close this tab.</p>
-                    </div>`;
-            } catch (err) {
-                alert('Failed to shutdown. Server might be unreachable.');
-            }
-        }
-
-        async function deleteBranch(branchName) {
-            if (!confirm(`Are you sure you want to DELETE all data for branch "${branchName}"? This cannot be undone.`)) return;
-
-            try {
-                const res = await fetch(`/api/admin/branch/${encodeURIComponent(branchName)}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadData(); // Refresh
-                } else {
-                    alert('Failed to delete branch.');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Error connecting to server.');
-            }
-        }
-
-        async function deleteApp(branchName, appName) {
-            if (!confirm(`Remove "${appName}" from branch "${branchName}"?`)) return;
-
-            try {
-                const res = await fetch(`/api/admin/branch/${encodeURIComponent(branchName)}/app/${encodeURIComponent(appName)}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadData(); // Refresh
-                } else {
-                    alert('Failed to delete app.');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Error connecting to server.');
-            }
-        }
-
-        // Store notes for copy function
         let notesCache = {};
 
-        function copyNote(branchName) {
-            const note = notesCache[branchName];
-            if (!note) return;
-
-            // Try modern clipboard API first, fallback to textarea method
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(note).then(() => {
-                    alert('Note copied to clipboard!');
-                }).catch(() => {
-                    fallbackCopy(note);
-                });
-            } else {
-                fallbackCopy(note);
+        async function shutdownServer() {
+            if (!confirm('Stop the server?')) return;
+            try {
+                await fetch('/api/shutdown', { method: 'POST' });
+                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Server Stopped</h2></div>';
+            } catch (err) {
+                alert('Failed to shutdown');
             }
         }
 
-        function fallbackCopy(text) {
+        async function deleteBranch(branch) {
+            if (!confirm(`Delete branch "${branch}"?`)) return;
+            try {
+                await fetch(`/api/admin/branch/${encodeURIComponent(branch)}`, { method: 'DELETE' });
+                loadData();
+            } catch (err) {
+                alert('Error');
+            }
+        }
+
+        async function deleteApp(branch, app) {
+            if (!confirm(`Remove "${app}"?`)) return;
+            try {
+                await fetch(`/api/admin/branch/${encodeURIComponent(branch)}/app/${encodeURIComponent(app)}`, { method: 'DELETE' });
+                loadData();
+            } catch (err) {
+                alert('Error');
+            }
+        }
+
+        function copyNote(branch) {
+            const note = notesCache[branch];
+            if (!note) return;
+
             const textarea = document.createElement('textarea');
-            textarea.value = text;
+            textarea.value = note;
             textarea.style.position = 'fixed';
             textarea.style.opacity = '0';
             document.body.appendChild(textarea);
             textarea.select();
             try {
                 document.execCommand('copy');
-                alert('Note copied to clipboard!');
+                alert('Copied!');
             } catch (err) {
-                alert('Copy failed. Please select and copy manually.');
+                alert('Copy failed');
             }
             document.body.removeChild(textarea);
         }
 
-        // Helper to ensure links have protocol
         function formatLink(url) {
             if (!url) return '';
             url = url.trim();
@@ -510,78 +259,45 @@
             try {
                 const res = await fetch('/api/admin/data');
                 const data = await res.json();
-                const container = document.getElementById('dashboard-grid');
+                const container = document.getElementById('branches');
 
-                // Cache notes for copy function
-                data.forEach(branch => {
-                    notesCache[branch.branch] = branch.note;
-                });
+                data.forEach(b => notesCache[b.branch] = b.note);
 
                 if (data.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state-admin" style="grid-column: 1/-1;">
-                            <svg width="64\" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
-                            </svg>
-                            <h3 style="margin: 16px 0 8px; color: var(--text-primary);">No Active Submissions</h3>
-                            <p>Release notes will appear here when team members submit their entries.</p>
-                        </div>`;
+                    container.innerHTML = '<div class="empty-state">No submissions yet</div>';
                     return;
                 }
 
                 container.innerHTML = data.map(branch => `
                     <div class="branch-card">
-                        <div class="card-header">
-                            <div class="branch-info">
-                                <div class="branch-icon">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="6" y1="3" x2="6" y2="15"></line>
-                                        <circle cx="18" cy="6" r="3"></circle>
-                                        <circle cx="6" cy="18" r="3"></circle>
-                                        <path d="M18 9a9 9 0 0 1-9 9"></path>
-                                    </svg>
-                                </div>
-                                <span class="branch-name">${branch.branch}</span>
-                                <span class="branch-badge">${branch.apps.length} App${branch.apps.length !== 1 ? 's' : ''}</span>
-                            </div>
+                        <div class="branch-header">
+                            <span class="branch-name">${branch.branch}</span>
+                            <span class="app-count">${branch.apps.length} app(s)</span>
                         </div>
                         
-                        <div class="card-body">
-                            <div class="app-list">
-                                <div class="app-list-header">Submissions</div>
-                                ${branch.apps.map(app => {
+                        <div class="apps-list">
+                            ${branch.apps.map(app => {
                     const aiLink = formatLink(app.aiCodeReviewLink);
                     const batLink = formatLink(app.featureBatLink);
                     return `
-                                    <div class="app-item" style="flex-direction: column; align-items: stretch;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div class="app-item-info">
-                                                <span class="app-name">${app.name}</span>
-                                                ${app.tagHashId ? `<span class="hash-id" title="BB File Tag ID">${app.tagHashId}</span>` : ''}
-                                            </div>
-                                            <button class="btn-delete-app" onclick="deleteApp('${branch.branch}', '${app.name}')" title="Remove submission">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                            </button>
-                                        </div>
+                                <div class="app-item">
+                                    <div>
+                                        <div class="app-name">${app.name}</div>
                                         <div class="app-links">
-                                            ${aiLink ? `<a href="${aiLink}" target="_blank" rel="noopener">🤖 AI Review</a>` : '<span class="no-link">🤖 —</span>'}
-                                            ${batLink ? `<a href="${batLink}" target="_blank" rel="noopener">🧪 FeatureBAT</a>` : '<span class="no-link">🧪 —</span>'}
+                                            ${aiLink ? `<a href="${aiLink}" target="_blank">AI Review</a>` : ''}
+                                            ${batLink ? `<a href="${batLink}" target="_blank">FeatureBAT</a>` : ''}
                                         </div>
                                     </div>
-                                `}).join('')}
-                            </div>
+                                    <button class="btn-delete" onclick="deleteApp('${branch.branch}', '${app.name}')">Remove</button>
+                                </div>
+                            `}).join('')}
                         </div>
 
                         <div class="preview-box">${branch.note}</div>
                         
                         <div class="card-actions">
-                            <button class="btn btn-primary" onclick="copyNote('${branch.branch}')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                Copy Note
-                            </button>
-                            <button class="btn btn-secondary btn-delete" onclick="deleteBranch('${branch.branch}')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
+                            <button class="btn-copy" onclick="copyNote('${branch.branch}')">Copy Note</button>
+                            <button class="btn-delete" onclick="deleteBranch('${branch.branch}')">Delete Branch</button>
                         </div>
                     </div>
                 `).join('');
@@ -591,7 +307,6 @@
             }
         }
 
-        // Poll interval
         loadData();
         setInterval(loadData, 5000);
     </script>
