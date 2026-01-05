@@ -76,35 +76,24 @@ function generateReleaseNote(branchName) {
 
     // Issues Section
     const uniqueIssues = [...new Set(data.issues)];
-    // logic: last issue gets the branch footer
-    // If no issues, we still might need the footer if that's the standard. 
-    // Assuming if issues exist:
+
+    // Build app names for the footer
+    const appNamesBracket = data.apps.length > 1
+        ? `{${data.apps.map(a => a.name).join(',')}}`
+        : data.apps[0].name;
+
+    // Footer line is always present (hardcoded placeholder format)
+    const footerLine = `[placeholder] [${branchName}] CCC: com.webos.app.${appNamesBracket}`;
 
     let issuesContent = '';
 
     if (uniqueIssues.length > 0) {
-        // Prepare list
-        const appNamesBracket = data.apps.length > 1
-            ? `{${data.apps.map(a => a.name).join(',')}}`
-            : data.apps[0].name;
-
-        issuesContent = uniqueIssues.map((issue, index) => {
-            // In the multi-app scenario, we put the footer on the very last issue of the merged list?
-            // Or does every issue get a line? 
-            // Request said: if branch name is same then messages merge. 
-            // "issues" section in request example:
-            // :issues:
-            // [issues 2]
-            // [TVPLAT-12345]
-            // [DITTEST-1234] [branch] com.webos.app.{app1,app2}
-
-            // So, simple list, and the LAST item gets the suffix.
-
-            if (index === uniqueIssues.length - 1) {
-                return `[${issue}] [${branchName}] com.webos.app.${appNamesBracket}`;
-            }
-            return `[${issue}]`;
-        }).join('\n');
+        // Issues listed first (each on its own line)
+        const issuesList = uniqueIssues.map(issue => `[${issue}]`).join('\n');
+        issuesContent = issuesList + '\n' + footerLine;
+    } else {
+        // No issues, just the footer
+        issuesContent = footerLine;
     }
 
     return [
@@ -140,7 +129,7 @@ app.get('/api/notes/:branch', (req, res) => {
 
 // API: Submit a new entry (Public)
 app.post('/api/submit', (req, res) => {
-    const { appName, submissionId, gitlog, issues, branch: rawBranch, tagHashId } = req.body;
+    const { appName, submissionId, gitlog, issues, branch: rawBranch, tagHashId, aiCodeReviewLink, featureBatLink } = req.body;
     const branch = rawBranch ? rawBranch.toLowerCase() : '';
 
     if (!branch || !appName) {
@@ -163,7 +152,9 @@ app.post('/api/submit', (req, res) => {
         name: appName,
         submissionId,
         gitlog,
-        tagHashId // Stored but not in message
+        tagHashId,
+        aiCodeReviewLink: aiCodeReviewLink || '',
+        featureBatLink: featureBatLink || ''
     };
 
     if (existingAppIndex >= 0) {

@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tagHashId: document.getElementById('tagHashId'),
         branch: document.getElementById('branch'),
         issues: document.getElementById('issues'),
-        gitlog: document.getElementById('gitlog')
+        gitlog: document.getElementById('gitlog'),
+        aiCodeReviewLink: document.getElementById('aiCodeReviewLink'),
+        featureBatLink: document.getElementById('featureBatLink')
     };
 
     const preview = document.getElementById('message-preview');
@@ -41,7 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
             tagHashId: inputs.tagHashId.value.trim(),
             branch: inputs.branch.value.trim(),
             issues: inputs.issues.value.trim(),
-            gitlog: inputs.gitlog.value.trim()
+            gitlog: inputs.gitlog.value.trim(),
+            aiCodeReviewLink: inputs.aiCodeReviewLink.value.trim(),
+            featureBatLink: inputs.featureBatLink.value.trim()
         };
 
         if (!payload.appName || !payload.branch) {
