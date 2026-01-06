@@ -8,7 +8,7 @@ const fs = require('fs');
 const app = express();
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
-const ADMIN_PASS = 'LGSI12@soft34';
+const ADMIN_PASS = '123456';
 const COOKIE_NAME = 'admin_token';
 
 app.use(cors());
